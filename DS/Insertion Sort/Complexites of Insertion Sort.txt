@@ -1,0 +1,12 @@
+The time and space complexities of Insertion Sort are as follows:
+
+Time Complexity:
+
+Best Case: O(n) - when the input array is already sorted.
+Worst Case: O(n^2) - when the input array is sorted in reverse order.
+Average Case: O(n^2)
+Space Complexity:
+
+The space complexity of Insertion Sort is O(1), as it requires a constant amount of additional space to perform the sorting operation.
+
+It is important to note that Insertion Sort is an in-place sorting algorithm, which means it modifies the original array without requiring additional memory for a new copy of the array.

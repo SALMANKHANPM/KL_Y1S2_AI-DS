@@ -1,0 +1,30 @@
+Let's apply this approach to the given sequence of records:
+
+Step 1: Divide the input data into smaller chunks
+
+We can divide the input data into two chunks of size 5:
+
+Chunk 1: 17, 3, 29, 56, 24
+Chunk 2: 18, 4, 9, 10, 23
+
+Step 2: Sort each chunk
+
+We can use an efficient in-memory sorting algorithm like quicksort to sort each chunk:
+
+Chunk 1: 3, 17, 24, 29, 56
+Chunk 2: 4, 9, 10, 18, 23
+
+Step 3: Write each sorted chunk to a temporary file
+
+We can write each sorted chunk to a temporary file on the disk:
+
+File 1: 3, 17, 24, 29, 56
+File 2: 4, 9, 10, 18, 23
+
+Step 4: Merge the temporary files into a single sorted file
+
+We can use a 2-way merge sort algorithm to merge the two temporary files into a single sorted file:
+
+Merged file: 3, 4, 9, 10, 17, 18, 23, 24, 29, 56
+
+Therefore, the sequence of records sorted in ascending order using external sorting (2-way merge sort) is: 3, 4, 9, 10, 17, 18, 23, 24, 29, 56.
