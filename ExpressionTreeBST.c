@@ -1,3 +1,21 @@
+/*
+Title: Expression Trees using Binary Search Tree
+
+Abstract:
+
+Expression Trees are a data structure used to represent mathematical expressions in a tree format, where each node of the tree represents an operator or operand in the expression. The Binary Search Tree (BST) is another data structure used to store data in a sorted manner. In this project, we implement the Expression Trees using a Binary Search Tree to efficiently evaluate and manipulate mathematical expressions.
+
+The project involves the following steps:
+
+Reading a postfix expression from the user.
+Creating the corresponding expression tree using a BST.
+Deriving the infix, prefix, and postfix expressions from the expression tree.
+Displaying the results to the user.
+The implementation is done using the C programming language. The project aims to provide a simple and efficient way to handle mathematical expressions using Expression Trees and Binary Search Trees. The program can be used for educational purposes, such as teaching students how to evaluate and manipulate expressions using trees, or for practical purposes, such as evaluating complex mathematical expressions in a program.
+*/
+
+// Code :
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -80,3 +98,11 @@ int main() {
 
     return 0;
 }
+
+/*Output :
+
+Infix expression: a-b/c+d*e%f/g*h
+Prefix expression: *-a+/bc/%*defgh
+Postfix expression: abc/de*f%g/+-h*
+
+*/
