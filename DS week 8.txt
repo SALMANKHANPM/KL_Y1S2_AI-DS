@@ -1,0 +1,743 @@
+WEEK 8 **
+
+pg 132 ***
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_SIZE 100
+
+// Define a stack data structure
+typedef struct {
+    int top;
+    char data[MAX_SIZE];
+} Stack;
+
+// Initialize an empty stack
+void init(Stack* s) {
+    s->top = -1;
+}
+
+// Push an element onto the stack
+void push(Stack* s, char c) {
+    s->data[++s->top] = c;
+}
+
+// Pop an element from the stack
+char pop(Stack* s) {
+    return s->data[s->top--];
+}
+
+// Check if the stack is empty
+int is_empty(Stack* s) {
+    return s->top == -1;
+}
+
+// Check the top element of the stack without popping it
+char peek(Stack* s) {
+    return s->data[s->top];
+}
+
+// Return the precedence of an operator
+int precedence(char c) {
+    if (c == '$') {
+        return 3;
+    } else if (c == '*' || c == '/') {
+        return 2;
+    } else if (c == '+' || c == '-') {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+// Convert infix expression to postfix expression
+void infix_to_postfix(char* infix, char* postfix) {
+    Stack s;
+    init(&s);
+    int i = 0;
+    while (infix[i] != '\0') {
+        if (infix[i] == ' ' || infix[i] == '\t') {
+            // ignore whitespace
+        } else if (isdigit(infix[i])) {
+            // copy digits directly to postfix expression
+            while (isdigit(infix[i])) {
+                *postfix++ = infix[i++];
+            }
+            *postfix++ = ' ';
+            i--;
+        } else if (infix[i] == '(') {
+            push(&s, infix[i]);
+        } else if (infix[i] == ')') {
+            while (!is_empty(&s) && peek(&s) != '(') {
+                *postfix++ = pop(&s);
+                *postfix++ = ' ';
+            }
+            pop(&s);  // discard '('
+        } else {  // infix[i] is an operator
+            while (!is_empty(&s) && peek(&s) != '(' && precedence(peek(&s)) >= precedence(infix[i])) {
+                *postfix++ = pop(&s);
+                *postfix++ = ' ';
+            }
+            push(&s, infix[i]);
+        }
+        i++;
+    }
+    while (!is_empty(&s)) {
+        *postfix++ = pop(&s);
+        *postfix++ = ' ';
+    }
+    *postfix = '\0';
+}
+
+int main() {
+    char infix[MAX_SIZE];
+    char postfix[MAX_SIZE];
+    fgets(infix, MAX_SIZE, stdin);
+    infix_to_postfix(infix, postfix);
+    printf("%s\n", postfix);
+    return 0;
+}
+-----------------------------------------------------------------------------
+
+pg 133 **
+
+#include <stdio.h>
+#include <stdlib.h>
+
+int main() {
+    int n;
+    scanf("%d", &n);
+    while (n--) {
+        int stack[100], top = -1, a, b;
+        char c;
+        while ((c = getchar()) != '?') {
+            if (c == ' ') continue;
+            if (c >= '0' && c <= '9') {
+                int n = 0;
+                while (c >= '0' && c <= '9') {
+                    n = n * 10 + (c - '0');
+                    c = getchar();
+                }
+                stack[++top] = n;
+                continue;
+            }
+            b = stack[top--];
+            a = stack[top--];
+            switch (c) {
+                case '+': stack[++top] = a + b; break;
+                case '-': stack[++top] = a - b; break;
+                case '*': stack[++top] = a * b; break;
+                case '/': stack[++top] = a / b; break;
+                case '$': stack[++top] = a % b; break;
+            }
+        }
+        printf("%d\n", stack[top--]);
+    }
+    return 0;
+}
+-------------------------------------------------------------------------
+pg 134 **
+
+#include <stdio.h>
+#include <stdlib.h>
+
+int evaluate_postfix(char* postfix) {
+    int stack[100], top = -1;
+    char c;
+    while ((c = *postfix++)) {
+        if (c == ' ') continue;
+        if (c >= '0' && c <= '9') {
+            int n = 0;
+            while (c >= '0' && c <= '9') {
+                n = n * 10 + (c - '0');
+                c = *postfix++;
+            }
+            stack[++top] = n;
+            continue;
+        }
+        int b = stack[top--];
+        int a = stack[top--];
+        switch (c) {
+            case '+': stack[++top] = a + b; break;
+            case '-': stack[++top] = a - b; break;
+            case '*': stack[++top] = a * b; break;
+            case '/': stack[++top] = a / b; break;
+            case '?': return stack[top--];
+        }
+    }
+    return stack[top--];
+}
+
+int main() {
+    int n;
+    scanf("%d", &n);
+    while (n--) {
+        char postfix[1000];
+        scanf("%[^\n]%*c", postfix);
+        printf("%d\n", evaluate_postfix(postfix));
+    }
+    return 0;
+}
+-------------------------------------------------------------------------
+pg 135**
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+#define MAX_LEN 100
+
+int is_operator(char c) {
+    return (c == '+' || c == '-' || c == '*' || c == '/' || c == '^');
+}
+
+int get_priority(char c) {
+    if (c == '^') {
+        return 3;
+    } else if (c == '*' || c == '/') {
+        return 2;
+    } else if (c == '+' || c == '-') {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+void infix_to_postfix(char* infix, char* postfix) {
+    char stack[MAX_LEN];
+    int top = -1;
+    int i, j;
+    char c;
+    for (i = 0, j = 0; infix[i] != '\0'; i++) {
+        c = infix[i];
+        if (isalpha(c)) {
+            postfix[j++] = c;
+        } else if (is_operator(c)) {
+            while (top >= 0 && get_priority(stack[top]) >= get_priority(c)) {
+                postfix[j++] = stack[top--];
+            }
+            stack[++top] = c;
+        } else if (c == '(') {
+            stack[++top] = c;
+        } else if (c == ')') {
+            while (top >= 0 && stack[top] != '(') {
+                postfix[j++] = stack[top--];
+            }
+            if (top < 0 || stack[top] != '(') {
+                printf("Unbalanced parentheses!\n");
+                exit(1);
+            }
+            top--;
+        }
+    }
+    while (top >= 0) {
+        if (stack[top] == '(') {
+            printf("Unbalanced parentheses!\n");
+            exit(1);
+        }
+        postfix[j++] = stack[top--];
+    }
+    postfix[j] = '\0';
+}
+
+int main() {
+    char infix[MAX_LEN], postfix[MAX_LEN];
+    fgets(infix, MAX_LEN, stdin);
+    infix_to_postfix(infix, postfix);
+    printf("%s\n", postfix);
+    return 0;
+}
+
+------------------------------------------------------------------
+pg 136 ****
+#include <stdio.h>
+#include <string.h>
+
+// function to check if the given character is an opening bracket
+int is_opening_bracket(char ch) {
+    return (ch == '(' || ch == '{' || ch == '[');
+}
+
+// function to check if the given character is a closing bracket
+int is_closing_bracket(char ch) {
+    return (ch == ')' || ch == '}' || ch == ']');
+}
+
+// function to check if two brackets form a pair
+int are_matching_brackets(char opening, char closing) {
+    return ((opening == '(' && closing == ')') ||
+            (opening == '{' && closing == '}') ||
+            (opening == '[' && closing == ']'));
+}
+
+// function to check if an expression has balanced brackets
+int is_balanced(char* expression) {
+    int len = strlen(expression);
+    char stack[len];
+    int top = -1;
+    
+    for (int i = 0; i < len; i++) {
+        if (is_opening_bracket(expression[i])) {
+            stack[++top] = expression[i];
+        } else if (is_closing_bracket(expression[i])) {
+            if (top == -1) {
+                return 0;
+            }
+            char opening = stack[top--];
+            if (!are_matching_brackets(opening, expression[i])) {
+                return 0;
+            }
+        }
+    }
+    
+    return (top == -1);
+}
+
+// example usage
+int main() {
+    char expression[100];
+    scanf("%s", expression);
+    
+    int is_balanced_expression = is_balanced(expression);
+    
+    if (is_balanced_expression) {
+        printf("1"); // balanced
+    } else {
+        printf("0"); // not balanced
+    }
+    
+    return 0;
+}
+---------------------------------------------------------------
+pg 137***
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// define a structure for the expression tree node
+typedef struct Node {
+    char value;
+    struct Node* left;
+    struct Node* right;
+} Node;
+
+// function to create a new tree node with the given value
+Node* create_node(char value) {
+    Node* node = (Node*) malloc(sizeof(Node));
+    node->value = value;
+    node->left = NULL;
+    node->right = NULL;
+    return node;
+}
+
+// function to check if the given character is an operator
+int is_operator(char ch) {
+    return (ch == '+' || ch == '-' || ch == '*' || ch == '/');
+}
+
+// function to construct an expression tree from a postfix expression
+Node* construct_expression_tree(char* postfix) {
+    int len = strlen(postfix);
+    Node* stack[len];
+    int top = -1;
+    
+    for (int i = 0; i < len; i++) {
+        char ch = postfix[i];
+        Node* node = create_node(ch);
+        if (is_operator(ch)) {
+            node->right = stack[top--];
+            node->left = stack[top--];
+        }
+        stack[++top] = node;
+    }
+    
+    return stack[0];
+}
+
+// function to print the infix expression of an expression tree
+void print_infix_expression(Node* node) {
+    if (node != NULL) {
+        if (is_operator(node->value)) {
+            printf("(");
+        }
+        print_infix_expression(node->left);
+        printf("%c", node->value);
+        print_infix_expression(node->right);
+        if (is_operator(node->value)) {
+            printf(")");
+        }
+    }
+}
+
+// function to print the prefix expression of an expression tree
+void print_prefix_expression(Node* node) {
+    if (node != NULL) {
+        printf("%c", node->value);
+        print_prefix_expression(node->left);
+        print_prefix_expression(node->right);
+    }
+}
+
+// example usage
+int main() {
+    char postfix[100];
+    scanf("%s", postfix);
+    
+    Node* root = construct_expression_tree(postfix);
+    
+    printf("Infix expression: ");
+    print_infix_expression(root);
+    printf("\n");
+    
+    printf("Prefix expression: ");
+    print_prefix_expression(root);
+    printf("\n");
+    
+    return 0;
+}
+-----------------------------------------------------------------
+pg 138 **
+#include <stdio.h>
+#include <math.h>
+
+int main() {
+    char infix[] = "I-J/K+L^M^N";
+    float I=2, J=4, K=1, L=3, M=-2, N=5;
+    float stack[10];
+    int top = -1;
+    char c;
+    for (int i = 0; infix[i] != '\0'; i++) {
+        c = infix[i];
+        if (c >= 'a' && c <= 'z') {
+            stack[++top] = *(float*)(&I + (c - 'a'));
+        } else if (c == '+' || c == '-' || c == '*' || c == '/' || c == '^') {
+            float operand2 = stack[top--];
+            float operand1 = stack[top--];
+            switch (c) {
+                case '+': stack[++top] = operand1 + operand2; break;
+                case '-': stack[++top] = operand1 - operand2; break;
+                case '*': stack[++top] = operand1 * operand2; break;
+                case '/': stack[++top] = operand1 / operand2; break;
+                case '^': stack[++top] = pow(operand1, operand2); break;
+            }
+        }
+    }
+    printf("Result: %.2f\n", stack[top]);
+    return 0;
+}
+
+------------------------------------------------------------
+pg 139**
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+#define MAX_SIZE 100
+
+// Operator precedence dictionary
+int prec(char op) {
+    switch (op) {
+        case '+':
+        case '-':
+            return 1;
+        case '*':
+        case '/':
+            return 2;
+        case '^':
+            return 3;
+        default:
+            return -1;
+    }
+}
+
+// Convert infix expression to postfix
+char* infix_to_postfix(char* expr) {
+    char* postfix = (char*) malloc(MAX_SIZE * sizeof(char));
+    char stack[MAX_SIZE];
+    int top = -1;
+
+    for (int i = 0; i < strlen(expr); i++) {
+        if (isalnum(expr[i])) {
+            postfix[strlen(postfix)] = expr[i];
+        } else if (expr[i] == '(') {
+            stack[++top] = expr[i];
+        } else if (expr[i] == ')') {
+            while (top >= 0 && stack[top] != '(') {
+                postfix[strlen(postfix)] = stack[top--];
+            }
+            top--;  // Discard left parenthesis
+        } else {  // expr[i] is an operator
+            while (top >= 0 && stack[top] != '(' && prec(expr[i]) <= prec(stack[top])) {
+                postfix[strlen(postfix)] = stack[top--];
+            }
+            stack[++top] = expr[i];
+        }
+    }
+    while (top >= 0) {
+        postfix[strlen(postfix)] = stack[top--];
+    }
+    postfix[strlen(postfix)] = '\0';
+
+    return postfix;
+}
+
+int main() {
+    int t;
+    char expr[MAX_SIZE];
+
+    scanf("%d", &t);
+    for (int i = 0; i < t; i++) {
+        scanf("%s", expr);
+        char* postfix = infix_to_postfix(expr);
+        printf("%s\n", postfix);
+        free(postfix);
+    }
+
+    return 0;
+}
+
+---------------------------------------------------------
+pg 140**
+#include <stdio.h>
+#include <stdbool.h>
+#include <string.h>
+
+bool check_balanced_parentheses(char* expr) {
+    int len = strlen(expr);
+    char stack[len];
+    int top = -1;
+    for (int i = 0; i < len; i++) {
+        char c = expr[i];
+        if (c == '(' || c == '{' || c == '[') {
+            stack[++top] = c;
+        } else if (c == ')' || c == '}' || c == ']') {
+            if (top == -1) {
+                return false;
+            }
+            if ((c == ')' && stack[top] == '(') || 
+                (c == '}' && stack[top] == '{') || 
+                (c == ']' && stack[top] == '[')) {
+                top--;
+            } else {
+                return false;
+            }
+        }
+    }
+    return top == -1;
+}
+
+int main() {
+    char expr[] = "((a+b)*(c-d))/(e+f)";
+    if (check_balanced_parentheses(expr)) {
+        printf("The expression has balanced parentheses.\n");
+    } else {
+        printf("The expression does not have balanced parentheses.\n");
+    }
+    return 0;
+}
+
+-------------------------------------------------------------
+pg 141**
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
+
+#define MAX_SIZE 100
+
+int evaluate_expression(char* expr) {
+    int len = strlen(expr);
+    int stack[MAX_SIZE];
+    int top = -1;
+    for (int i = 0; i < len; i++) {
+        char c = expr[i];
+        if (c >= '0' && c <= '9') {
+            int num = 0;
+            while (i < len && expr[i] >= '0' && expr[i] <= '9') {
+                num = num * 10 + (expr[i] - '0');
+                i++;
+            }
+            i--;
+            stack[++top] = num;
+        } else if (c == '+' || c == '-' || c == '*' || c == '/') {
+            int op1 = stack[top--];
+            int op2 = stack[top--];
+            int result;
+            if (c == '+') {
+                result = op2 + op1;
+            } else if (c == '-') {
+                result = op2 - op1;
+            } else if (c == '*') {
+                result = op2 * op1;
+            } else if (c == '/') {
+                result = op2 / op1;
+            }
+            stack[++top] = result;
+        }
+    }
+    return stack[top];
+}
+
+int main() {
+    char expr[] = "((3+4)*5)";
+    int result = evaluate_expression(expr);
+    printf("The result is: %d\n", result);
+    return 0;
+}
+
+-------------------------------------------------------------------
+pg 142 **
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_SIZE 100000
+
+int stack[MAX_SIZE], queue[MAX_SIZE], front = -1, rear = -1;
+
+int main() {
+    int n, k;
+    scanf("%d %d", &n, &k);
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &stack[i]);
+    }
+    int sum = 0;
+    // Pop two elements from the stack and push them to the queue
+    for (int i = 0; i < 2 && n > 0; i++) {
+        n--;
+        queue[++rear] = stack[n];
+    }
+    // Convert the remaining elements of the stack to a queue
+    while (n > 0) {
+        n--;
+        while (front <= rear && stack[n] > queue[rear]) {
+            stack[++n] = queue[rear--];
+        }
+        queue[++rear] = stack[n];
+    }
+    // Remove k elements from the queue and add their values to sum
+    for (int i = 0; i < k && front <= rear; i++) {
+        sum += queue[front++];
+    }
+    printf("%d\n", sum);
+    return 0;
+}
+---------------------------------------------------------------------------
+pg 143*****
+
+void construct_tower(int N) {
+    int tower[N], top = -1;
+    for (int i = 1; i <= N; i++) {
+        tower[++top] = i;
+        for (int j = top; j > 0; j--) {
+            if (tower[j] < tower[j-1]) {
+                int temp = tower[j];
+                tower[j] = tower[j-1];
+                tower[j-1] = temp;
+            } else {
+                break;
+            }
+        }
+        for (int j = 0; j <= top; j++) {
+            printf("%d ", tower[j]);
+        }
+        printf("\n");
+    }
+}
+-------------------------------------------------------------------------------------
+
+pg:: 144 ****
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+#define MAX_SIZE 100
+
+// Function to check if a character is an operator
+int isOperator(char ch) {
+    return (ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == '^');
+}
+
+// Function to get the precedence of an operator
+int getPrecedence(char op) {
+    switch(op) {
+        case '+':
+        case '-':
+            return 1;
+        case '*':
+        case '/':
+            return 2;
+        case '^':
+            return 3;
+        default:
+            return -1;
+    }
+}
+
+// Function to convert infix expression to postfix
+void infixToPostfix(char* infix, char* postfix) {
+    char stack[MAX_SIZE];
+    int top = -1;
+    int i, j;
+
+    for (i = 0, j = 0; infix[i] != '\0'; i++) {
+        char ch = infix[i];
+
+        if (isalnum(ch)) { // If the character is an operand
+            postfix[j++] = ch;
+        }
+        else if (isOperator(ch)) { // If the character is an operator
+            while (top >= 0 && getPrecedence(stack[top]) >= getPrecedence(ch)) {
+                postfix[j++] = stack[top--];
+            }
+            stack[++top] = ch;
+        }
+        else if (ch == '(') { // If the character is a left parenthesis
+            stack[++top] = ch;
+        }
+        else if (ch == ')') { // If the character is a right parenthesis
+            while (top >= 0 && stack[top] != '(') {
+                postfix[j++] = stack[top--];
+            }
+            top--; // Pop the left parenthesis from the stack
+        }
+    }
+
+    // Pop any remaining operators from the stack
+    while (top >= 0) {
+        postfix[j++] = stack[top--];
+    }
+
+    postfix[j] = '\0'; // Add the null terminator to the postfix string
+}
+
+int main() {
+    char infix[MAX_SIZE];
+    char postfix[MAX_SIZE];
+
+    printf("Enter an infix expression: ");
+    fgets(infix, MAX_SIZE, stdin);
+    infix[strcspn(infix, "\n")] = '\0'; // Remove the newline character from the input string
+
+    infixToPostfix(infix, postfix);
+
+    printf("Postfix expression: %s\n", postfix);
+
+    return 0;
+}
+
+
+
+
+-----------------------------------COMPLETED🙃-----------------------------------------------
+
+COCAINE
